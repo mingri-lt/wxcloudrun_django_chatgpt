@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 import logging
 
@@ -5,6 +6,10 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from wxcloudrun.models import Counters
 
+import openai
+# 设置openai的api key
+openai.api_key = "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"
+messages = [{"role": "system", "content": "You are a helpful assistant."}]
 
 logger = logging.getLogger('log')
 
@@ -98,5 +103,22 @@ def dialogue(request, _):
     # POST 请求，返回请求体
     elif request.method == 'POST' or request.method == 'post':
         logger.info('dialogue req: {}'.format(request.body))
-        return JsonResponse({'code': 0, 'data': request.body.decode('utf-8')},
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        if 'content' not in body:
+            return JsonResponse({'code': -1, 'errorMsg': '缺少content参数'},
+                                json_dumps_params={'ensure_ascii': False})
+        global messages
+        messages.append({"role": "user", "content": body['content']})
+        reponse = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=messages
+        )
+        res_content = reponse["choices"][0]["message"]["content"]
+        res_content = res_content.encode('utf-8').decode('utf-8')
+        messages.append({"role": "assistant", "content": res_content})
+        return JsonResponse({'code': 0, 'data': res_content},
+                            json_dumps_params={'ensure_ascii': False})
+    else:
+        return JsonResponse({'code': -1, 'errorMsg': '请求方式错误'},
                             json_dumps_params={'ensure_ascii': False})
