@@ -98,27 +98,21 @@ def update_count(request):
 def dialogue(request, _):
     # GET 请求，返回hello world
     if request.method == 'GET' or request.method == 'get':
-        return JsonResponse({'code': 0, 'data': 'hello world'},
-                            json_dumps_params={'ensure_ascii': False})
-    # POST 请求，返回请求体
-    elif request.method == 'POST' or request.method == 'post':
-        logger.info('dialogue req: {}'.format(request.body))
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        if 'content' not in body:
+        # 获取参数中的content的值
+        content = request.GET.get('content', '')
+        global messages
+        if content:
+            # 将content添加到messages中
+            messages.append({"role": "user", "content": content})
+            # 调用openai的接口
+            reponse = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=messages
+            )
+            res_content = reponse["choices"][0]["message"]["content"]
+            res_content = res_content.encode('utf-8').decode('utf-8')
+            return JsonResponse({'code': 0, 'data': res_content},
+                                json_dumps_params={'ensure_ascii': False})
+        else:
             return JsonResponse({'code': -1, 'errorMsg': '缺少content参数'},
                                 json_dumps_params={'ensure_ascii': False})
-        global messages
-        messages.append({"role": "user", "content": body['content']})
-        reponse = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=messages
-        )
-        res_content = reponse["choices"][0]["message"]["content"]
-        res_content = res_content.encode('utf-8').decode('utf-8')
-        messages.append({"role": "assistant", "content": res_content})
-        return JsonResponse({'code': 0, 'data': res_content},
-                            json_dumps_params={'ensure_ascii': False})
-    else:
-        return JsonResponse({'code': -1, 'errorMsg': '请求方式错误'},
-                            json_dumps_params={'ensure_ascii': False})
