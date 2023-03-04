@@ -21,9 +21,9 @@ urlpatterns = (
     # 计数器接口
     url(r'^^api/count(/)?$', views.counter),
 
+    # 对话接口 POST
+    url(r'^^api/dialogue(/)?$', views.dialogue),
+
     # 获取主页
     url(r'(/)?$', views.index),
-
-    # 对话接口 POST
-    url(r'^^api/dialog(/)?$', views.dialogue),
 )
