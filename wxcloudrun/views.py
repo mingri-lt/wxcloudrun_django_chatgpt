@@ -89,3 +89,14 @@ def update_count(request):
     else:
         return JsonResponse({'code': -1, 'errorMsg': 'action参数错误'},
                     json_dumps_params={'ensure_ascii': False})
+
+def dialogue(request, _):
+    # GET 请求，返回hello world
+    if request.method == 'GET' or request.method == 'get':
+        return JsonResponse({'code': 0, 'data': 'hello world'},
+                            json_dumps_params={'ensure_ascii': False})
+    # POST 请求，返回请求体
+    elif request.method == 'POST' or request.method == 'post':
+        logger.info('dialogue req: {}'.format(request.body))
+        return JsonResponse({'code': 0, 'data': request.body.decode('utf-8')},
+                            json_dumps_params={'ensure_ascii': False})

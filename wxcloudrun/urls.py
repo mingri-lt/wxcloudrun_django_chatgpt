@@ -23,4 +23,7 @@ urlpatterns = (
 
     # 获取主页
     url(r'(/)?$', views.index),
+
+    # 对话接口 POST
+    url(r'^^api/dialog(/)?$', views.dialogue),
 )
